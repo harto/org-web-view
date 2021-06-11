@@ -3,26 +3,25 @@
             [reagent.core :as r]
             [reagent.dom :as rdom]))
 
-(defonce todos
-  (r/atom nil))
+(defonce state
+  (r/atom {:todos []}))
 
-(defn todo-item [{:keys [state headline created scheduled deadline] :as item}]
-  [:li.todo-item {:class (str "state-" (str/lower-case state))}
-   headline ])
+(defn todo-item [{:keys [state headline created scheduled deadline]}]
+  [:div.todo-item {:data-state (str/lower-case state)}
+   headline])
 
-(defn todo-list [items]
-  [:ul.todo-list
+(defn todo-group [{:keys [tag items]}]
+  [:details
+   [:summary tag]
    (for [item items]
-     [todo-item ^{:key (:headline item)} item])])
+     ^{:key (:headline item)} [todo-item item])])
 
 (defn root []
-  (let [groups (group-by #(first (:tags %)) @todos)]
-    [:dl#root
+  (let [groups (group-by #(first (:tags %)) (:todos @state))
+        expanded-groups (:expanded-groups @state)]
+    [:<>
      (for [[tag items] groups]
-       [:<>
-        [:dt.group-header ^{:key (str tag "-header")} tag]
-        [:dl.group-body ^{:key (str tag "-body")}
-         [todo-list items]]])]))
+       ^{:key tag} [todo-group {:tag tag :items items}])]))
 
 (defn ^:dev/after-load mount-root []
   (let [root-el (.getElementById js/document "root")]
@@ -30,5 +29,6 @@
     (rdom/render [root] root-el)))
 
 (defn init [todo-data]
-  (reset! todos (js->clj todo-data :keywordize-keys true))
+  (swap! state assoc :todos (js->clj todo-data :keywordize-keys true))
+  (.log js/console @state)
   (mount-root))

@@ -3,27 +3,27 @@
 html, body {
   margin: 0;
   padding: 0;
+  font-family: 'Helvetica Neue', 'Helvetica', sans-serif;
+  font-size: 175%;
 }
 
-dl, dt, dd {
-  margin: 0;
-  padding: 0;
+details {
+  border-top: 1px black solid;
 }
 
-.group-header {
+details:first-of-type {
+  border-top: 0;
+}
+
+summary {
+  font-size: 1.2em;
+  padding: 1.2rem 1rem;
   background: lightgrey;
   font-weight: bold;
-  padding: 40px 20px;
-}
-
-.todo-list {
-  margin: 0;
-  padding: 0;
 }
 
 .todo-item {
   list-style: none;
-  margin: 0;
-  padding: 20px;
+  padding: 1rem;
   border-top: 1px grey solid;
 }
