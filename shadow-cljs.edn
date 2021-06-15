@@ -8,4 +8,4 @@
  :builds {:main {:target :browser
                  :output-dir "public/js"
                  :asset-path "/js"
-                 :modules {:main {:entries [owv.main]}}}}}
+                 :modules {:main {:init-fn owv.main/init}}}}}
