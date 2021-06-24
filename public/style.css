@@ -27,3 +27,9 @@ summary {
   padding: 1rem;
   border-top: 1px grey solid;
 }
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  font-size: 0.75rem;
+}

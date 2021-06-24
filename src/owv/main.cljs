@@ -19,9 +19,10 @@
   (.log js/console "loading" url)
   (go
     (swap! state assoc :loading? true)
-    (let [todos (<! (fetch-todos url))]
+    (let [{:keys [todos dumped]} (<! (fetch-todos url))]
       (swap! state assoc :data-url url
                          :todos todos
+                         :dumped dumped
                          :loading? false)
       (.setItem js/localStorage "owv.data-url" url))))
 
@@ -72,7 +73,9 @@
         expanded-groups (:expanded-groups @state)]
     [:<>
      (for [[tag items] groups]
-       ^{:key tag} [todo-group {:tag tag :items items}])]))
+       ^{:key tag} [todo-group {:tag tag :items items}])
+     [:div.footer
+      (str "Last updated " (:dumped @state))]]))
 
 ;; Initialization
 
