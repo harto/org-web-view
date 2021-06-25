@@ -10,10 +10,23 @@
 (defonce state
   (r/atom {}))
 
+(defn parse-date [s]
+  ;; TODO: it's strongly recommended not to do this, but it seems to work fine
+  ;; (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date)
+  (if s (js/Date. s)))
+
 (defn fetch-todos [url]
   (go
     (let [response (<p! (js/fetch url))]
-      (js->clj (<p! (.json response)) :keywordize-keys true))))
+      (-> (js->clj (<p! (.json response)) :keywordize-keys true)
+          (update :todos (fn [todos]
+                           (map (fn [item]
+                                  (-> item
+                                      (update :created parse-date)
+                                      (update :scheduled parse-date)
+                                      (update :deadline parse-date)))
+                                todos)))
+          (update :dumped parse-date)))))
 
 (defn load-todos! [url]
   (.log js/console "loading" url)
@@ -60,6 +73,9 @@
 
 (defn todo-item [{:keys [state headline created scheduled deadline]}]
   [:div.todo-item {:data-state (str/lower-case state)}
+   (if created (str "Created: " created))
+   (if scheduled (str "Scheduled: " scheduled))
+   (if deadline (str "Deadline: " deadline))
    headline])
 
 (defn todo-group [{:keys [tag items]}]
