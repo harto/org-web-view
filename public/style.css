@@ -2,34 +2,59 @@
 
 html, body {
   margin: 0;
-  padding: 0;
+  padding: 0 0 1em;
   font-family: 'Helvetica Neue', 'Helvetica', sans-serif;
-  font-size: 175%;
+  font-size: 150%;
 }
 
-details {
+.todo-group {
   border-top: 1px black solid;
 }
 
-details:first-of-type {
+.todo-group:first-of-type {
   border-top: 0;
 }
 
-summary {
-  font-size: 1.2em;
+.todo-tag {
+  font-size: 1.2rem;
   padding: 1.2rem 1rem;
   background: lightgrey;
   font-weight: bold;
 }
 
 .todo-item {
-  list-style: none;
-  padding: 1rem;
+  /* list-style: none; */
+  /* padding: 1rem; */
+}
+
+table.todos td {
+  margin: 0;
+  padding: 0.2em;
   border-top: 1px grey solid;
 }
 
-.footer {
+.created, .scheduled, .deadline {
+  width: 4em;
+  white-space: nowrap;
+}
+
+.created {
+  color: #999;
+}
+
+.scheduled {
+}
+
+.deadline {
+  /* background: grey; */
+}
+
+.updated-at {
   position: fixed;
   bottom: 0;
-  font-size: 0.75rem;
+  left: 0;
+  right: 0;
+  padding: 0.2em;
+  background: white;
+  /* font-size: .75rem; */
 }
