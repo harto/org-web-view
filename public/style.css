@@ -7,6 +7,13 @@ html, body {
   font-size: 150%;
 }
 
+details {
+}
+
+summary {
+  list-style: none;
+}
+
 .todo-group {
   border-top: 1px black solid;
 }
@@ -25,6 +32,25 @@ html, body {
 .todo-item {
   /* list-style: none; */
   /* padding: 1rem; */
+  border-top: 1px grey solid;
+  padding: 1rem;
+}
+
+.todo-item[data-scheduled="now"] {
+  background-color: green;
+}
+.todo-item[data-scheduled="overdue"] {
+  background-color: yellow;
+}
+
+.todo-item[data-deadline="soon"] {
+  background-color: yellow;
+}
+.todo-item[data-deadline="now"] {
+  background-color: orange;
+}
+.todo-item[data-deadline="overdue"] {
+  background-color: red;
 }
 
 table.todos td {
@@ -38,7 +64,11 @@ table.todos td {
   white-space: nowrap;
 }
 
-.created {
+.todo-item .created { display: none; }
+
+.todo-item[data-stale="true"] .created {
+  display: inline;
+  margin-left: 0.5em;
   color: #999;
 }
 

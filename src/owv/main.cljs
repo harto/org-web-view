@@ -98,19 +98,24 @@
   [:details.todo-group
    [:summary.todo-tag tag]
    (for [{:keys [state headline created scheduled deadline]} items]
-     [:details {:key headline
-                ;; TODO: figure out which things we want to see here
-                ;; (e.g. waiting, deferred?)
-                :data-todo-state (str/lower-case state)
-                :data-stale (> (days-since created) 30)
-                :data-scheduled (let [days-since-scheduled (days-since scheduled)]
-                                  (cond (> days-since-scheduled 0) :overdue
-                                        (= days-since-scheduled 0) :now))
-                :data-deadline (let [days-until-deadline (days-until deadline)]
-                                 (cond (< days-until-deadline 0) :overdue
-                                       (< days-until-deadline 3) :now
-                                       (<= days-until-deadline 7) :soon))}
-      [:summary headline]
+     [:details.todo-item
+      {:key headline
+       ;; TODO: figure out which things we want to see here
+       ;; (e.g. waiting, deferred?)
+       :data-todo-state (str/lower-case state)
+       :data-stale (and (not scheduled) (> (days-since created) 30))
+       :data-scheduled (let [days-since-scheduled (days-since scheduled)]
+                         (cond (> days-since-scheduled 0) :overdue
+                               (= days-since-scheduled 0) :now))
+       :data-deadline (let [days-until-deadline (days-until deadline)]
+                        (cond (< days-until-deadline 0) :overdue
+                              (< days-until-deadline 3) :now
+                              (<= days-until-deadline 7) :soon))}
+      [:summary
+       [:input.todo-checkbox {:type "checkbox"}]
+       headline
+       (if created
+         [:span.created "(" (days-since created) " days old)"])]
       [:div.todo-meta
        [:div "Created: " (if created (format-date created) "?")]
        (if scheduled [:div "Scheduled: " (format-date scheduled)])
