@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")"/..
 
 mkdir -p build
-cp public/{index.html,style.css} build/
+cp public/{index.html,style.css,favicon.png} build/
 npx shadow-cljs --config-merge '{:output-dir "build/js"}' release main
 
 aws s3 sync build/ s3://harto.org/todo/
