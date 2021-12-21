@@ -7,7 +7,14 @@ html, body {
   font-size: 150%;
 }
 
-details {
+.ready {
+  background-color: green;
+}
+.needs-attention {
+  background-color: orange;
+}
+.overdue {
+  background-color: red;
 }
 
 summary {
@@ -22,35 +29,30 @@ summary {
   border-top: 0;
 }
 
-.todo-tag {
+.todo-group-header {
   font-size: 1.2rem;
   padding: 1.2rem 1rem;
   background: lightgrey;
+  position: relative;
+}
+
+.todo-tag {
   font-weight: bold;
 }
 
+.todo-group-status-indicator {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  border-radius: 100%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+}
+
 .todo-item {
-  /* list-style: none; */
-  /* padding: 1rem; */
   border-top: 1px grey solid;
   padding: 1rem;
-}
-
-.todo-item[data-scheduled="now"] {
-  background-color: green;
-}
-.todo-item[data-scheduled="overdue"] {
-  background-color: yellow;
-}
-
-.todo-item[data-deadline="soon"] {
-  background-color: yellow;
-}
-.todo-item[data-deadline="now"] {
-  background-color: orange;
-}
-.todo-item[data-deadline="overdue"] {
-  background-color: red;
 }
 
 table.todos td {

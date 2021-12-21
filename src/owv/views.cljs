@@ -1,6 +1,7 @@
 (ns owv.views
   (:require [clojure.string :as str]
             [owv.date :refer [days-since days-until format-date]]
+            [owv.todo :as t]
             [re-frame.core :refer [dispatch subscribe]]
             [reagent.core :as r]))
 
@@ -35,23 +36,27 @@
 ;; To-dos
 
 (defn todo-group [tag]
-  [:details.todo-group
-   [:summary.todo-tag tag]
-   (let [todos @(subscribe [:get-todos tag])]
-     (for [{:keys [state headline created scheduled deadline]} todos]
+  (let [todos @(subscribe [:tagged-todos tag])
+        ready @(subscribe [:tagged-ready-todos tag])
+        needing-attention @(subscribe [:tagged-todos-needing-attention tag])
+        overdue @(subscribe [:tagged-overdue-todos tag])]
+    [:details.todo-group
+     [:summary.todo-group-header
+      [:span.todo-tag tag]
+      (cond
+        (> (count overdue) 0) [:span.todo-group-status-indicator.overdue]
+        (> (count needing-attention) 0) [:span.todo-group-status-indicator.needs-attention]
+        (> (count ready) 0) [:span.todo-group-status-indicator.ready])]
+     (for [{:keys [state headline created scheduled deadline] :as todo} todos]
        [:details.todo-item
         {:key headline
          ;; TODO: figure out which things we want to see here
          ;; (e.g. waiting, deferred?)
          :data-todo-state (str/lower-case state)
-         :data-stale (and (not scheduled) (> (days-since created) 30))
-         :data-scheduled (let [days-since-scheduled (days-since scheduled)]
-                           (cond (> days-since-scheduled 0) :overdue
-                                 (= days-since-scheduled 0) :now))
-         :data-deadline (let [days-until-deadline (days-until deadline)]
-                          (cond (< days-until-deadline 0) :overdue
-                                (< days-until-deadline 3) :now
-                                (<= days-until-deadline 7) :soon))}
+         :class [(if (t/stale? todo) "stale")
+                 (cond (t/overdue? todo) "overdue"
+                       (t/needs-attention? todo) "needs-attention"
+                       (t/ready? todo) "ready")]}
         [:summary
          [:input.todo-checkbox {:type "checkbox"}]
          headline
@@ -60,7 +65,7 @@
         [:div.todo-meta
          [:div "Created: " (if created (format-date created) "?")]
          (if scheduled [:div "Scheduled: " (format-date scheduled)])
-         (if deadline [:div "Deadline: " (format-date deadline)])]]))])
+         (if deadline [:div "Deadline: " (format-date deadline)])]])]))
 
 (defn todo-list []
   (let [tags @(subscribe [:tags])]

@@ -1,6 +1,7 @@
 (ns owv.subs
   (:require [owv.date :refer [days-since minutes-since]]
-            [re-frame.core :refer [reg-sub]]))
+            [owv.todo :as todo]
+            [re-frame.core :refer [reg-sub subscribe]]))
 
 (reg-sub :loading-todos? #(:loading-todos? %))
 
@@ -20,10 +21,21 @@
   (fn [grouped-todos]
     (keys grouped-todos)))
 
-(reg-sub :get-todos
+(reg-sub :tagged-todos
   :<- [:grouped-todos]
   (fn [grouped-todos [_ tag]]
     (get grouped-todos tag)))
+
+(defn reg-tagged-todo-filtering-sub [name pred]
+  (reg-sub name
+    (fn [[_ tag]]
+      (subscribe [:tagged-todos tag]))
+    (fn [todos _]
+      (filter pred todos))))
+
+(reg-tagged-todo-filtering-sub :tagged-ready-todos todo/ready?)
+(reg-tagged-todo-filtering-sub :tagged-todos-needing-attention todo/needs-attention?)
+(reg-tagged-todo-filtering-sub :tagged-overdue-todos todo/overdue?)
 
 (reg-sub :last-updated-at #(:updated-at %))
 
