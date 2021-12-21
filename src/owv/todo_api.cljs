@@ -1,4 +1,4 @@
-(ns owv.todos
+(ns owv.todo-api
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [cljs.core.async.interop :refer [<p!]]
             [re-frame.core :refer [dispatch reg-fx]]))
