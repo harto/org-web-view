@@ -1,0 +1,12 @@
+#+TITLE: org-web-view
+
+A minimal web UI of org-mode TODO data.
+
+* Development
+
+- Initial setup: ~npm install~
+- In Emacs: =M-x cider-jack-in-cljs=
+
+* Deployment
+
+~bin/deploy~
