@@ -35,6 +35,17 @@
 
 ;; To-dos
 
+(defn linkify
+  "Transform links in org format (e.g. [[http://example.com][click me]]) to
+  anchor elements."
+  [s]
+  (->> s
+       (re-seq #"[^\[\]]+|\[\[.+?\]\]")
+       (map (fn [part]
+              (if-let [[_ url label] (re-matches #"\[\[(.+)\]\[(.+)\]\]" part)]
+                [:a {:href url :target "_blank"} label]
+                part)))))
+
 (defn todo-group [tag]
   (let [todos @(subscribe [:tagged-todos tag])
         ready @(subscribe [:tagged-ready-todos tag])
@@ -59,7 +70,7 @@
                        (t/ready? todo) "ready")]}
         [:summary
          [:input.todo-checkbox {:type "checkbox"}]
-         headline
+         (linkify headline)
          (if created
            [:span.created "(" (days-since created) " days old)"])]
         [:div.todo-meta
