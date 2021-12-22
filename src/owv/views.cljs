@@ -43,7 +43,7 @@
        (re-seq #"[^\[\]]+|\[\[.+?\]\]")
        (map (fn [part]
               (if-let [[_ url label] (re-matches #"\[\[(.+)\]\[(.+)\]\]" part)]
-                [:a {:href url :target "_blank"} label]
+                [:a {:href url :target "_blank" :key url} label]
                 part)))))
 
 (defn todo-group [tag]
