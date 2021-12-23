@@ -8,13 +8,12 @@
 ;; Configuration
 
 (defn config-panel []
-  (let [saved-url @(subscribe [:data-url])
-        url (r/atom saved-url)]
+  (let [prev-url @(subscribe [:todos-url])
+        url (r/atom prev-url)]
     (fn []
       [:form {:on-submit #(do
                             (.preventDefault %)
-                            (dispatch [:update-data-url @url])
-                            (dispatch [:close-config]))}
+                            (dispatch [:set-todos-url @url]))}
        [:div
         [:label {:for "todo-json-url"} "Data URL: "]
         [:input#todo-json-url {:type "text"
@@ -24,16 +23,83 @@
         [:input {:type "submit"
                  :disabled (nil? @url)
                  :value "OK"}]
-        [:button {:disabled (nil? saved-url)
+        [:button {:disabled (nil? prev-url)
                   :on-click #(do
                                (.preventDefault %)
-                               (dispatch [:close-config]))}
+                               (dispatch [:hide-config-panel]))}
          "Cancel"]]])))
 
-(defn loading-indicator []
-  "Loading ...")
+;; Capture new to-dos
 
-;; To-dos
+(defn selected-values [select]
+  (doall (->> (.-options select)
+              (filter #(.-selected %))
+              (map #(.-value %)))))
+
+(defn new-todo-panel []
+  (let [new-todo (r/atom {:tags () :headline ""})
+        all-tags @(subscribe [:tags])]
+    (fn []
+      [:form {:on-submit #(do
+                            (.preventDefault %)
+                            (dispatch [:add-todo @new-todo]))}
+       [:div
+        [:label {:for "new-todo-tags"} "Tag(s):"]
+        [:select#new-todo-tags {:multiple true
+                                :on-change #(swap! new-todo assoc :tags (selected-values (.-target %)))
+                                :value (:tags @new-todo)}
+         (for [tag all-tags]
+           [:option {:key tag :value tag} tag])]]
+       [:div
+        [:label {:for "new-todo-headline"} "Headline:"]
+        [:input#new-todo-headline {:on-change #(swap! new-todo assoc :headline (.-value (.-target %)))
+                                   :value (:headline @new-todo)}]]
+       [:div
+        [:input {:type "submit"
+                 :disabled (str/blank? (:headline @new-todo))
+                 :value "OK"}]
+        [:button {:on-click #(do
+                               (.preventDefault %)
+                               (dispatch [:hide-new-todo-panel]))}
+         "Cancel"]]])))
+
+;; Review new to-dos
+
+(defn review-new-todos-panel []
+  (let [new-todos @(subscribe [:new-todos])]
+    [:div
+     [:ul
+      (for [t new-todos]
+        [:li {:key (:headline t)}
+         (:headline t)
+         (if-let [tags (seq (:tags t))]
+           (str " (" (str/join ", " tags) ")"))
+         " "
+         [:button {:on-click #(dispatch [:delete-todo t])} "delete"]])]
+     [:div
+      [:button {:on-click #(dispatch [:hide-review-new-todos-panel])}
+       "Done"]]]))
+
+;; Settings pane
+
+(defn settings-pane []
+  [:div.settings-panel
+   (condp = @(subscribe [:visible-settings-panel])
+     :new-todo [new-todo-panel]
+     :review-new-todos [review-new-todos-panel]
+     :config [config-panel]
+     [:div
+      [:ul.settings-menu
+       [:li [:button {:on-click #(dispatch [:show-new-todo-panel])} "New to-do"]]
+       [:li [:button {:on-click #(dispatch [:show-review-new-todos-panel])}
+             "Review new to-dos (" (count @(subscribe [:new-todos])) ")"]]
+       [:li [:button "Review completed to-dos"]]
+       [:li [:button {:on-click #(dispatch [:show-config-panel])} "Configure"]]]
+      [:div.updated-at
+       "Updated " [:span {:title @(subscribe [:last-updated-at])}
+                   (str @(subscribe [:last-updated-minutes-ago]) " minutes ago")]]])])
+
+;; To-do list
 
 (defn linkify
   "Transform links in org format (e.g. [[http://example.com][click me]]) to
@@ -86,16 +152,22 @@
 
 ;; App root
 
-(defn footer []
-  [:div.updated-at
-   "Updated " [:span {:title @(subscribe [:last-updated-at])}
-               (str @(subscribe [:last-updated-minutes-ago]) " minutes ago")]])
+(defn loading-indicator []
+  "Loading ...")
+
+(defn header []
+  (let [show-settings-pane? @(subscribe [:show-settings-pane?])]
+    [:div.page-header
+     [:button {:on-click #(if show-settings-pane?
+                            (dispatch [:hide-settings-pane])
+                            (dispatch [:show-settings-pane]))}
+      "Settings"]]))
 
 (defn root []
-  (let [loading-todos? @(subscribe [:loading-todos?])
-        config-panel-open? @(subscribe [:config-panel-open?])]
+  (let [show-settings-pane? @(subscribe [:show-settings-pane?])
+        loading-todos? @(subscribe [:loading-todos?])]
     [:<>
-     [todo-list]
+     [header]
+     (if show-settings-pane? [settings-pane])
      (if loading-todos? [loading-indicator])
-     (if config-panel-open? [config-panel])
-     [footer]]))
+     [todo-list]]))

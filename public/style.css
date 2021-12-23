@@ -55,12 +55,6 @@ summary {
   padding: 1rem;
 }
 
-table.todos td {
-  margin: 0;
-  padding: 0.2em;
-  border-top: 1px grey solid;
-}
-
 .created, .scheduled, .deadline {
   width: 4em;
   white-space: nowrap;
@@ -68,25 +62,12 @@ table.todos td {
 
 .todo-item .created { display: none; }
 
-.todo-item[data-stale="true"] .created {
+.todo-item.stale .created {
   display: inline;
   margin-left: 0.5em;
   color: #999;
 }
 
-.scheduled {
-}
-
-.deadline {
-  /* background: grey; */
-}
-
 .updated-at {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 0.2em;
   background: white;
-  /* font-size: .75rem; */
 }

@@ -5,11 +5,13 @@
 
 (reg-sub :loading-todos? #(:loading-todos? %))
 
-(reg-sub :config-panel-open? #(:config-panel-open? %))
+(reg-sub :show-settings-pane? #(:settings-pane-state %))
+(reg-sub :visible-settings-panel #(:settings-pane-state %))
 
-(reg-sub :data-url #(:data-url %))
+(reg-sub :todos-url #(:todos-url %))
 
 (reg-sub :todos #(:todos %))
+(reg-sub :new-todos #(:new-todos %))
 
 (reg-sub :grouped-todos
   :<- [:todos]
