@@ -5,23 +5,30 @@
 
 (reg-sub :loading-todos? #(:loading-todos? %))
 
-(reg-sub :show-settings-pane? #(:settings-pane-state %))
-(reg-sub :visible-settings-panel #(:settings-pane-state %))
+(reg-sub :show-settings-pane? #(:settings-panel %))
+(reg-sub :visible-settings-panel #(:settings-panel %))
 
 (reg-sub :todos-url #(:todos-url %))
 
-(reg-sub :todos #(:todos %))
+(reg-sub :all-todos #(:todos %))
 (reg-sub :new-todos #(:new-todos %))
+(reg-sub :completed-todos #(:completed-todos %))
+
+(reg-sub :active-todos
+  :<- [:all-todos]
+  :<- [:completed-todos]
+  (fn [[all-todos completed-todos]]
+    (remove completed-todos all-todos)))
 
 (reg-sub :grouped-todos
-  :<- [:todos]
+  :<- [:active-todos]
   (fn [todos]
     (group-by #(first (:tags %)) todos)))
 
 (reg-sub :tags
   :<- [:grouped-todos]
   (fn [grouped-todos]
-    (keys grouped-todos)))
+    (sort (keys grouped-todos))))
 
 (reg-sub :tagged-todos
   :<- [:grouped-todos]

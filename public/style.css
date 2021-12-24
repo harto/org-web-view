@@ -68,6 +68,10 @@ summary {
   color: #999;
 }
 
+.todo-item.complete {
+  text-decoration: line-through;
+}
+
 .updated-at {
   background: white;
 }

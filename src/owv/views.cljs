@@ -5,6 +5,17 @@
             [re-frame.core :refer [dispatch subscribe]]
             [reagent.core :as r]))
 
+(defn linkify
+  "Transform links in org format (e.g. [[http://example.com][click me]]) to
+  anchor elements."
+  [s]
+  (->> s
+       (re-seq #"[^\[\]]+|\[\[.+?\]\]")
+       (map (fn [part]
+              (if-let [[_ url label] (re-matches #"\[\[(.+)\]\[(.+)\]\]" part)]
+                [:a {:href url :target "_blank" :key url} label]
+                part)))))
+
 ;; Configuration
 
 (defn config-panel []
@@ -26,7 +37,7 @@
         [:button {:disabled (nil? prev-url)
                   :on-click #(do
                                (.preventDefault %)
-                               (dispatch [:hide-config-panel]))}
+                               (dispatch [:show-settings-pane]))}
          "Cancel"]]])))
 
 ;; Capture new to-dos
@@ -60,25 +71,43 @@
                  :value "OK"}]
         [:button {:on-click #(do
                                (.preventDefault %)
-                               (dispatch [:hide-new-todo-panel]))}
+                               (dispatch [:show-settings-pane]))}
          "Cancel"]]])))
 
-;; Review new to-dos
+;; Review new/completed to-dos
 
-(defn review-new-todos-panel []
-  (let [new-todos @(subscribe [:new-todos])]
-    [:div
-     [:ul
-      (for [t new-todos]
-        [:li {:key (:headline t)}
-         (:headline t)
-         (if-let [tags (seq (:tags t))]
-           (str " (" (str/join ", " tags) ")"))
-         " "
-         [:button {:on-click #(dispatch [:delete-todo t])} "delete"]])]
-     [:div
-      [:button {:on-click #(dispatch [:hide-review-new-todos-panel])}
-       "Done"]]]))
+(defn todos-review-list [{:keys [todos action-label on-click]}]
+  [:ul
+    (for [t todos]
+      [:li {:key (:headline t)}
+       (linkify (:headline t))
+       (if-let [tags (seq (:tags t))]
+         (str " (" (str/join ", " tags) ")"))
+       " "
+       [:button {:on-click #(on-click t)} action-label]])])
+
+(defn review-todos-panel [todos-list]
+  [:div
+   todos-list
+   [:div
+    [:button {:on-click #(dispatch [:show-settings-pane])}
+     "Done"]]])
+
+(defn new-todos-panel []
+  [:<>
+   [:div "New to-dos"]
+   [review-todos-panel
+    [todos-review-list {:todos @(subscribe [:new-todos])
+                        :action-label "delete"
+                        :on-click #(dispatch [:delete-todo %])}]]])
+
+(defn completed-todos-panel []
+  [:<>
+   [:div "Completed to-dos"]
+   [review-todos-panel
+    [todos-review-list {:todos @(subscribe [:completed-todos])
+                        :action-label "restore"
+                        :on-click #(dispatch [:uncomplete-todo %])}]]])
 
 ;; Settings pane
 
@@ -86,14 +115,20 @@
   [:div.settings-panel
    (condp = @(subscribe [:visible-settings-panel])
      :new-todo [new-todo-panel]
-     :review-new-todos [review-new-todos-panel]
+     :new-todos [new-todos-panel]
+     :completed-todos [completed-todos-panel]
      :config [config-panel]
      [:div
       [:ul.settings-menu
        [:li [:button {:on-click #(dispatch [:show-new-todo-panel])} "New to-do"]]
-       [:li [:button {:on-click #(dispatch [:show-review-new-todos-panel])}
-             "Review new to-dos (" (count @(subscribe [:new-todos])) ")"]]
-       [:li [:button "Review completed to-dos"]]
+       (let [new-todo-count (count @(subscribe [:new-todos]))]
+         [:li [:button {:on-click #(dispatch [:show-new-todos-panel])
+                        :disabled (zero? new-todo-count)}
+               "Review new to-dos (" new-todo-count ")"]])
+       (let [completed-todo-count (count @(subscribe [:completed-todos]))]
+         [:li [:button {:on-click #(dispatch [:show-completed-todos-panel])
+                        :disabled (zero? completed-todo-count)}
+               "Review completed to-dos (" completed-todo-count ")"]])
        [:li [:button {:on-click #(dispatch [:show-config-panel])} "Configure"]]]
       [:div.updated-at
        "Updated " [:span {:title @(subscribe [:last-updated-at])}
@@ -101,16 +136,35 @@
 
 ;; To-do list
 
-(defn linkify
-  "Transform links in org format (e.g. [[http://example.com][click me]]) to
-  anchor elements."
-  [s]
-  (->> s
-       (re-seq #"[^\[\]]+|\[\[.+?\]\]")
-       (map (fn [part]
-              (if-let [[_ url label] (re-matches #"\[\[(.+)\]\[(.+)\]\]" part)]
-                [:a {:href url :target "_blank" :key url} label]
-                part)))))
+(defn todo-item [_]
+  (let [marked-complete? (r/atom false)
+        hide-timeout (atom nil)]
+    (fn [{{:keys [state headline created scheduled deadline] :as todo} :todo}]
+      [:details.todo-item
+       {:class [(if (t/stale? todo) "stale")
+                (if @marked-complete? "complete")
+                (cond (t/overdue? todo) "overdue"
+                      (t/needs-attention? todo) "needs-attention"
+                      (t/ready? todo) "ready")]}
+       [:summary
+        [:input.todo-checkbox
+         {:type "checkbox"
+          :on-click (fn [_]
+                      (if @marked-complete?
+                        (do
+                          (.clearTimeout js/window @hide-timeout)
+                          (reset! hide-timeout nil)
+                          (reset! marked-complete? false))
+                        (do
+                          (reset! hide-timeout (.setTimeout js/window #(dispatch [:complete-todo todo]) 1000))
+                          (reset! marked-complete? true))))}]
+        (linkify headline)
+        (if created
+          [:span.created "(" (days-since created) " days old)"])]
+       [:div.todo-meta
+        [:div "Created: " (if created (format-date created) "?")]
+        (if scheduled [:div "Scheduled: " (format-date scheduled)])
+        (if deadline [:div "Deadline: " (format-date deadline)])]])))
 
 (defn todo-group [tag]
   (let [todos @(subscribe [:tagged-todos tag])
@@ -124,25 +178,8 @@
         (> (count overdue) 0) [:span.todo-group-status-indicator.overdue]
         (> (count needing-attention) 0) [:span.todo-group-status-indicator.needs-attention]
         (> (count ready) 0) [:span.todo-group-status-indicator.ready])]
-     (for [{:keys [state headline created scheduled deadline] :as todo} todos]
-       [:details.todo-item
-        {:key headline
-         ;; TODO: figure out which things we want to see here
-         ;; (e.g. waiting, deferred?)
-         :data-todo-state (str/lower-case state)
-         :class [(if (t/stale? todo) "stale")
-                 (cond (t/overdue? todo) "overdue"
-                       (t/needs-attention? todo) "needs-attention"
-                       (t/ready? todo) "ready")]}
-        [:summary
-         [:input.todo-checkbox {:type "checkbox"}]
-         (linkify headline)
-         (if created
-           [:span.created "(" (days-since created) " days old)"])]
-        [:div.todo-meta
-         [:div "Created: " (if created (format-date created) "?")]
-         (if scheduled [:div "Scheduled: " (format-date scheduled)])
-         (if deadline [:div "Deadline: " (format-date deadline)])]])]))
+     (for [todo todos]
+       [todo-item {:key (:headline todo) :todo todo}])]))
 
 (defn todo-list []
   (let [tags @(subscribe [:tags])]
