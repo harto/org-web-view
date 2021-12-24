@@ -1,7 +1,7 @@
 (ns owv.events
   (:require [clojure.set :as set]
+            [owv.api :as api]
             [owv.local-storage :as ls]
-            [owv.todo-api :as todo-api]
             [re-frame.core :refer [after inject-cofx reg-event-db reg-event-fx]]))
 
 (def url-key "owv.todos-url")
@@ -37,7 +37,7 @@
 (reg-event-fx :load-todos
   (fn [{:keys [db]} [_ url]]
     {:db (assoc db :loading-todos? true)
-     ::todo-api/fetch url}))
+     ::api/fetch url}))
 
 (reg-event-db :todos-loaded
   [persist-db]
