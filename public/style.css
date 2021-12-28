@@ -1,10 +1,86 @@
 /* -*- css-indent-offset: 2 -*- */
 
-html, body {
-  margin: 0;
-  padding: 0 0 1em;
+html {
   font-family: 'Helvetica Neue', 'Helvetica', sans-serif;
-  font-size: 150%;
+  font-size: 36px;
+}
+
+body {
+  margin: 0;
+}
+
+button, input, select {
+  font-size: 1rem;
+}
+
+button {
+  border: 1px black solid;
+  background: none;
+}
+
+.page-header {
+  background: yellow;
+  border-bottom: 2px black solid;
+  position: sticky;
+  top: 0;
+  /* left: 0; */
+  /* right: 0; */
+  padding: 1rem;
+  z-index: 1;
+}
+
+.updated-at {
+  float: right;
+  background: white;
+}
+
+#main-menu-overlay {
+  background: black;
+  opacity: 0.2;
+  position: fixed;
+  top: 3.3rem; /* ?? */
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+#main-menu-dropdown {
+  position: absolute;
+  top: 100%;
+  z-index: 1;
+  background: white;
+  border: 1px black solid;
+  box-shadow: 10px 10px 0px black;
+}
+
+.main-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.main-menu > li {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border-top: 1px black solid;
+}
+
+.main-menu li:first-child { border-top: 0; }
+
+.main-menu > li > button {
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem;
+  border: 0;
+}
+
+.panel {
+  padding: 0.5rem;
+}
+
+.buttons {
+  margin-top: 0.5rem;
 }
 
 .ready {
@@ -26,11 +102,11 @@ summary {
 }
 
 .todo-group:first-of-type {
+  margin-top: rem;
   border-top: 0;
 }
 
 .todo-group-header {
-  font-size: 1.2rem;
   padding: 1.2rem 1rem;
   background: lightgrey;
   position: relative;
@@ -70,8 +146,4 @@ summary {
 
 .todo-item.complete {
   text-decoration: line-through;
-}
-
-.updated-at {
-  background: white;
 }

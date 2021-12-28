@@ -5,8 +5,8 @@
 
 (reg-sub :loading-todos? #(:loading-todos? %))
 
-(reg-sub :show-settings-pane? #(:settings-panel %))
-(reg-sub :visible-settings-panel #(:settings-panel %))
+(reg-sub :show-main-menu? #(:menu %))
+(reg-sub :visible-menu-panel #(:menu %))
 
 (reg-sub :todos-url #(:todos-url %))
 

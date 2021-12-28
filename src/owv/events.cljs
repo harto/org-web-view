@@ -71,12 +71,12 @@
   (fn [db [_ todo]]
     (update db :completed-todos disj todo)))
 
-(doseq [[event visible-panel] {:show-settings-pane :initial
-                               :show-new-todo-panel :new-todo
-                               :show-new-todos-panel :new-todos
-                               :show-completed-todos-panel :completed-todos
-                               :show-config-panel :config}]
-  (reg-event-db event #(assoc % :settings-panel visible-panel)))
+(doseq [[event visible-panel] {:show-main-menu :summary
+                               :show-new-todo-form :new-todo
+                               :show-new-todos :new-todos
+                               :show-completed-todos :completed-todos
+                               :show-config :config}]
+  (reg-event-db event #(assoc % :menu visible-panel)))
 
-(reg-event-db :hide-settings-pane
-  #(dissoc % :settings-panel))
+(reg-event-db :hide-main-menu
+  #(dissoc % :menu))
