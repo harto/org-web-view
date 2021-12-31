@@ -18,6 +18,13 @@ button {
   background: none;
 }
 
+summary {
+  display: block;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
 .page-header {
   background: yellow;
   border-bottom: 2px black solid;
@@ -91,10 +98,6 @@ button {
 }
 .overdue {
   background-color: red;
-}
-
-summary {
-  list-style: none;
 }
 
 .todo-group {
