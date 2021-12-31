@@ -53,7 +53,7 @@
   [persist-db]
   (fn [{:keys [db]} [_ todo]]
     {:db (update db :new-todos conj todo)
-     :fx [[:dispatch [:show-settings-pane]]]}))
+     :fx [[:dispatch [:show-main-menu]]]}))
 
 (reg-event-db :delete-todo
   [persist-db]
