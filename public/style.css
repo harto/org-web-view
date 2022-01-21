@@ -112,7 +112,8 @@ summary {
 .todo-group-header {
   padding: 1.2rem 1rem;
   background: lightgrey;
-  position: relative;
+  position: sticky;
+  top: 3rem;
 }
 
 .todo-tag {

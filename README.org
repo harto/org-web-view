@@ -1,6 +1,8 @@
 #+TITLE: org-web-view
 
-A minimal web UI of org-mode TODO data.
+A read-only web view of your org-mode to-do list.
+
+The org-mode data must be exported in JSON format and hosted on the web.
 
 * Development
 
