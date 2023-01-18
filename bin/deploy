@@ -5,4 +5,11 @@ cd "$(dirname "$0")"/..
 
 bin/build
 
-aws s3 sync build/ s3://harto.org/todo/
+git checkout www
+for f in build/*; do
+  cp -R "$f" .
+  git add "$(basename "$f")"
+done
+git commit -m "release $(date +'%Y-%m-%d %H:%M:%S')"
+git push origin www
+git checkout -
