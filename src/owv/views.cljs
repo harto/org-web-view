@@ -77,7 +77,8 @@
         [:div
          [:label {:for "new-todo-headline"} "Headline:"]
          [:input#new-todo-headline {:on-change #(swap! new-todo assoc :headline (.-value (.-target %)))
-                                    :value (:headline @new-todo)}]]
+                                    :value (:headline @new-todo)
+                                    :autocomplete "off"}]]
         [:div.buttons
          [:input {:type "submit"
                   :disabled (str/blank? (:headline @new-todo))
