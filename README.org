@@ -4,6 +4,8 @@ A read-only web view of your org-mode to-do list.
 
 The org-mode data must be exported in JSON format and hosted on the web.
 
+TODO: describe JSON schema, etc.
+
 * Development
 
 - Initial setup: ~npm install~
